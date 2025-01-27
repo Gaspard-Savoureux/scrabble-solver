@@ -96,7 +96,7 @@ impl Dictionnary {
 
     /// Save the current dict to a file in JSON format
     ///
-    /// Slower then save [`save_to_bin_file`], but human readable
+    /// Slower then [`save_to_bin_file`], but human readable file
     pub fn save_to_json_file(&self, filepath: String) {
         let file = File::create(filepath).expect("Failed to create file");
         let writer = BufWriter::new(file);
@@ -113,12 +113,22 @@ impl Dictionnary {
         self.root = new_root;
     }
 
+    /// Save the current dict to a file in binary code format
+    ///
+    /// Faster then [`save_to_json_file`], but not human readable file
     pub fn save_to_bin_file(&self, filepath: String) {
-        !todo!()
+        let file = File::create(filepath).expect("Failed to create file");
+        let mut writer = BufWriter::new(file);
+
+        bincode::serialize_into(&mut writer, &self.root).expect("Failed to read JSON");
     }
 
     pub fn load_bin_file(&mut self, filepath: String) {
-        !todo!()
+        let file = File::open(filepath).expect("Failed to open file");
+        let mut reader = BufReader::new(file);
+
+        let new_root: Node = bincode::deserialize_from(&mut reader).expect("Failed to read JSON");
+        self.root = new_root;
     }
 }
 
@@ -154,10 +164,10 @@ mod tests {
         dict1.add_word("ALLIGATOR".chars());
         dict1.add_word("RUDIMENTAIRE".chars());
         dict1.add_word("RUSE".chars());
-        dict1.save_to_json_file(filename);
+        dict1.save_to_json_file(filename.clone());
 
         let mut dict2 = Dictionnary::new();
-        dict2.load_json_file("data.json".to_string());
+        dict2.load_json_file(filename);
 
         let letters_in_players_hand = vec![
             'A', 'S', 'U', 'T', 'R', 'E', 'D', 'I', 'M', 'N', 'T', 'I', 'R', 'E',
@@ -171,5 +181,27 @@ mod tests {
     }
 
     #[test]
-    fn save_and_load_bin_file_test() {}
+    fn save_and_load_bin_file_test() {
+        let filename: String = "test.bin".to_string();
+
+        let mut dict1 = Dictionnary::new();
+        dict1.add_word("RUST".chars());
+        dict1.add_word("ALLIGATOR".chars());
+        dict1.add_word("RUDIMENTAIRE".chars());
+        dict1.add_word("RUSE".chars());
+        dict1.save_to_bin_file(filename.clone());
+
+        let mut dict2 = Dictionnary::new();
+        dict2.load_bin_file(filename);
+
+        let letters_in_players_hand = vec![
+            'A', 'S', 'U', 'T', 'R', 'E', 'D', 'I', 'M', 'N', 'T', 'I', 'R', 'E',
+        ];
+
+        let words = dict2.get_words(letters_in_players_hand);
+
+        assert!(words.contains(&String::from("RUST")));
+        assert!(words.contains(&String::from("RUDIMENTAIRE")));
+        assert!(words.contains(&String::from("RUSE")));
+    }
 }

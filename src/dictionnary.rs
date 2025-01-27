@@ -1,5 +1,10 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs::File, io::BufWriter, str::Chars};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufReader, BufWriter},
+    str::Chars,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Node {
@@ -89,17 +94,30 @@ impl Dictionnary {
         concated_word
     }
 
-    /// Save the current dict to a file in json format
+    /// Save the current dict to a file in JSON format
     ///
     /// Slower then save [`save_to_bin_file`], but human readable
-    pub fn save_to_json_file(&self) {
-        let file = File::create("dict.json").expect("Failed to create file");
+    pub fn save_to_json_file(&self, filepath: String) {
+        let file = File::create(filepath).expect("Failed to create file");
         let writer = BufWriter::new(file);
 
         serde_json::to_writer_pretty(writer, &self.root).expect("Failed to read JSON");
     }
 
-    pub fn save_to_bin_file(&self) {
+    /// Load a file with a dictionnary save to the JSON format
+    pub fn load_json_file(&mut self, filepath: String) {
+        let file = File::open(filepath).expect("Failed to open file");
+        let reader = BufReader::new(file);
+
+        let new_root: Node = serde_json::from_reader(reader).expect("Failed to read JSON");
+        self.root = new_root;
+    }
+
+    pub fn save_to_bin_file(&self, filepath: String) {
+        !todo!()
+    }
+
+    pub fn load_bin_file(&mut self, filepath: String) {
         !todo!()
     }
 }
@@ -128,7 +146,29 @@ mod tests {
     }
 
     #[test]
-    fn save_and_load_json_file_test() {}
+    fn save_and_load_json_file_test() {
+        let filename: String = "test.json".to_string();
+
+        let mut dict1 = Dictionnary::new();
+        dict1.add_word("RUST".chars());
+        dict1.add_word("ALLIGATOR".chars());
+        dict1.add_word("RUDIMENTAIRE".chars());
+        dict1.add_word("RUSE".chars());
+        dict1.save_to_json_file(filename);
+
+        let mut dict2 = Dictionnary::new();
+        dict2.load_json_file("data.json".to_string());
+
+        let letters_in_players_hand = vec![
+            'A', 'S', 'U', 'T', 'R', 'E', 'D', 'I', 'M', 'N', 'T', 'I', 'R', 'E',
+        ];
+
+        let words = dict2.get_words(letters_in_players_hand);
+
+        assert!(words.contains(&String::from("RUST")));
+        assert!(words.contains(&String::from("RUDIMENTAIRE")));
+        assert!(words.contains(&String::from("RUSE")));
+    }
 
     #[test]
     fn save_and_load_bin_file_test() {}

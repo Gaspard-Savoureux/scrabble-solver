@@ -1,6 +1,7 @@
-use std::{collections::HashMap, str::Chars};
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, fs::File, io::BufWriter, str::Chars};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Node {
     end_of_word: bool,
     children: HashMap<char, Node>,
@@ -87,6 +88,20 @@ impl Dictionnary {
 
         concated_word
     }
+
+    /// Save the current dict to a file in json format
+    ///
+    /// Slower then save [`save_to_bin_file`], but human readable
+    pub fn save_to_json_file(&self) {
+        let file = File::create("dict.json").expect("Failed to create file");
+        let writer = BufWriter::new(file);
+
+        serde_json::to_writer_pretty(writer, &self.root).expect("Failed to read JSON");
+    }
+
+    pub fn save_to_bin_file(&self) {
+        !todo!()
+    }
 }
 
 #[cfg(test)]
@@ -111,4 +126,10 @@ mod tests {
         assert!(words.contains(&String::from("RUDIMENTAIRE")));
         assert!(words.contains(&String::from("RUSE")));
     }
+
+    #[test]
+    fn save_and_load_json_file_test() {}
+
+    #[test]
+    fn save_and_load_bin_file_test() {}
 }

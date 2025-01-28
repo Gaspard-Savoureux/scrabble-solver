@@ -9,7 +9,7 @@ const DEFAULT_FILE_SAVE: &'static str = "dict.bin";
 const DEFAULT_WORD_LIST: &'static str = "wordlists/words_alpha.txt";
 const USAGE: &'static str = "
 Usage:
-    scrabble-solver [options] [INPUT] [WORDLIST]
+    scrabble-solver [options] [INPUT]
     scrabble-solver (--help)
 
 Options:
@@ -27,7 +27,7 @@ fn main() {
         .unwrap_or_else(|e| e.exit());
 
     // DEBUG
-    println!("{:?}", args);
+    // println!("{:?}", args);
 
     let mut dict = Dictionnary::new();
 

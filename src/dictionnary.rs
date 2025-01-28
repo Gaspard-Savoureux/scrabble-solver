@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
-    fs::File,
+    fs::{self, File},
     io::{BufReader, BufWriter},
     str::Chars,
 };
@@ -94,10 +94,23 @@ impl Dictionnary {
         concated_word
     }
 
+    /// Load all the word present on a file
+    pub fn load_words_from_file(&mut self, filepath: &str) {
+        let content: Vec<String> = fs::read_to_string(filepath)
+            .expect("Failed to read input")
+            .split("\r\n")
+            .map(|line| line.to_string())
+            .collect();
+
+        for word in content {
+            self.add_word(word.to_uppercase().chars());
+        }
+    }
+
     /// Save the current dict to a file in JSON format
     ///
     /// Slower then [`save_to_bin_file`], but human readable file
-    pub fn save_to_json_file(&self, filepath: String) {
+    pub fn save_to_json_file(&self, filepath: &str) -> () {
         let file = File::create(filepath).expect("Failed to create file");
         let writer = BufWriter::new(file);
 
@@ -105,7 +118,7 @@ impl Dictionnary {
     }
 
     /// Load a file with a dictionnary save to the JSON format
-    pub fn load_json_file(&mut self, filepath: String) {
+    pub fn load_json_file(&mut self, filepath: &str) {
         let file = File::open(filepath).expect("Failed to open file");
         let reader = BufReader::new(file);
 
@@ -116,14 +129,14 @@ impl Dictionnary {
     /// Save the current dict to a file in binary code format
     ///
     /// Faster then [`save_to_json_file`], but not human readable file
-    pub fn save_to_bin_file(&self, filepath: String) {
+    pub fn save_to_bin_file(&self, filepath: &str) -> () {
         let file = File::create(filepath).expect("Failed to create file");
         let mut writer = BufWriter::new(file);
 
         bincode::serialize_into(&mut writer, &self.root).expect("Failed to read JSON");
     }
 
-    pub fn load_bin_file(&mut self, filepath: String) {
+    pub fn load_bin_file(&mut self, filepath: &str) {
         let file = File::open(filepath).expect("Failed to open file");
         let mut reader = BufReader::new(file);
 
@@ -157,14 +170,14 @@ mod tests {
 
     #[test]
     fn save_and_load_json_file_test() {
-        let filename: String = "test.json".to_string();
+        let filename = "test.json";
 
         let mut dict1 = Dictionnary::new();
         dict1.add_word("RUST".chars());
         dict1.add_word("ALLIGATOR".chars());
         dict1.add_word("RUDIMENTAIRE".chars());
         dict1.add_word("RUSE".chars());
-        dict1.save_to_json_file(filename.clone());
+        dict1.save_to_json_file(filename);
 
         let mut dict2 = Dictionnary::new();
         dict2.load_json_file(filename);
@@ -182,14 +195,14 @@ mod tests {
 
     #[test]
     fn save_and_load_bin_file_test() {
-        let filename: String = "test.bin".to_string();
+        let filename = "test.bin";
 
         let mut dict1 = Dictionnary::new();
         dict1.add_word("RUST".chars());
         dict1.add_word("ALLIGATOR".chars());
         dict1.add_word("RUDIMENTAIRE".chars());
         dict1.add_word("RUSE".chars());
-        dict1.save_to_bin_file(filename.clone());
+        dict1.save_to_bin_file(filename);
 
         let mut dict2 = Dictionnary::new();
         dict2.load_bin_file(filename);

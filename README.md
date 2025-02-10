@@ -14,7 +14,7 @@ Simple scrabble-solver written in rust.
 2. **Clone the repo:**
 
 ```sh
-git clone https://github.com/Gaspard-Savoureux/scrabble-solver.git
+git clone https://github.com/JoyousOne/scrabble-solver.git
 cd scrabble-solver
 ```
 
